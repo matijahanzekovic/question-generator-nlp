@@ -18,7 +18,6 @@ def postprocesstext(content):
 def summarizer(original_text, model, tokenizer, device):
   original_text = original_text.strip().replace("\n"," ")
   original_text = "summarize: " + original_text
-  # print (text)
   max_len = 512
   encoding = tokenizer.encode_plus(original_text, max_length = max_len, pad_to_max_length = False,
                                    truncation = True, return_tensors = "pt").to(device)
@@ -44,13 +43,6 @@ def summarizer(original_text, model, tokenizer, device):
 
 
 def summarize_text(original_text):
-    #with open('Original text.txt', 'r', encoding="utf-8") as file:
-        #original_text = file.read()
-
-    #print(original_text)
-
-    #print("PART OF TEXT: " + original_text)
-
     summary_model = T5ForConditionalGeneration.from_pretrained('t5-base')
     summary_tokenizer = T5Tokenizer.from_pretrained('t5-base')
 
@@ -61,7 +53,5 @@ def summarize_text(original_text):
     torch.cuda.empty_cache()
 
     summarized_text = summarizer(original_text, summary_model, summary_tokenizer, device)
-
-    #print("SUMMARIZED TEXT: " + summarized_text)
 
     return summarized_text

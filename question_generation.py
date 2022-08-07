@@ -21,7 +21,6 @@ def get_question(context, answer, model, tokenizer):
                           no_repeat_ngram_size=2,
                           max_length=72)
 
-
     dec = [tokenizer.decode(ids,skip_special_tokens=True) for ids in outs]
 
     question = dec[0].replace("question:","")
@@ -34,9 +33,6 @@ def generate_question(summarized_text, keywords):
 
     for answer in keywords:
         question = get_question(summarized_text, answer, question_model, question_tokenizer)
-        #print(question)
-        #print(answer.capitalize())
-        #print("\n")
         question_answer[question] = answer
 
     return question_answer

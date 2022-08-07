@@ -16,37 +16,38 @@ normalized_levenshtein = NormalizedLevenshtein()
 def filter_same_sense_words(original, wordlist):
     filtered_words = []
     base_sense = original.split('|')[1]
-    #print(base_sense)
+
     for eachword in wordlist:
         if eachword[0].split('|')[1] == base_sense:
             filtered_words.append(eachword[0].split('|')[0].replace("_", " ").title().strip())
+
     return filtered_words
 
 
 def get_highest_similarity_score(wordlist, wrd):
     score = []
+
     for each in wordlist:
         score.append(normalized_levenshtein.similarity(each.lower(), wrd.lower()))
+
     return max(score)
 
 
 def sense2vec_get_words(word, s2v, topn, question):
     output = []
-    #print("WORD: ", word)
     try:
         sense = s2v.get_best_sense(word,
                                    senses=["NOUN", "PERSON", "PRODUCT", "LOC", "ORG", "EVENT", "NORP", "WORK OF ART",
                                            "FAC", "GPE", "NUM", "FACILITY"])
         most_similar = s2v.most_similar(sense, n=topn)
-        # print (most_similar)
         output = filter_same_sense_words(sense, most_similar)
-        #print("SIMILIAR: ", output)
     except:
         output = []
 
     threshold = 0.6
     final = [word]
     checklist = question.split()
+
     for x in output:
         if get_highest_similarity_score(final, x) < threshold and x not in final and x not in checklist:
             final.append(x)
@@ -82,25 +83,26 @@ def mmr(doc_embedding, word_embeddings, words, top_n, lambda_param):
 
 def get_distractors (word, origsentence, sense2vecmodel, sentencemodel, top_n, lambdaval):
   distractors = sense2vec_get_words(word, sense2vecmodel, top_n, origsentence)
-  #print ("distractors ", distractors)
+
   if len(distractors) == 0:
     return distractors
+
   distractors_new = [word.capitalize()]
   distractors_new.extend(distractors)
-  # print ("distractors_new .. ",distractors_new)
 
   embedding_sentence = origsentence + " " + word.capitalize()
   # embedding_sentence = word
   keyword_embedding = sentencemodel.encode([embedding_sentence])
   distractor_embeddings = sentencemodel.encode(distractors_new)
 
-  # filtered_keywords = mmr(keyword_embedding, distractor_embeddings,distractors,4,0.7)
   max_keywords = min(len(distractors_new), 5)
   filtered_keywords = mmr(keyword_embedding, distractor_embeddings, distractors_new, max_keywords, lambdaval)
-  # filtered_keywords = filtered_keywords[1:]
   final = [word.capitalize()]
+
   for wrd in filtered_keywords:
     if wrd.lower() != word.lower():
       final.append(wrd.capitalize())
+
   final = final[1:]
+
   return final

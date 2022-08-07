@@ -12,7 +12,6 @@ def get_nouns(text):
         extractor.load_document(input=text, language='en')
         #    not contain punctuation marks or stopwords as candidates.
         pos = {'PROPN', 'NOUN'}
-        # pos = {'PROPN','NOUN'}
         stoplist = list(string.punctuation)
         stoplist += ['-lrb-', '-rrb-', '-lcb-', '-rcb-', '-lsb-', '-rsb-']
         stoplist += stopwords.words('english')
@@ -36,19 +35,19 @@ def get_nouns(text):
 
 def get_keywords(original_text, summarized_text):
   keywords = get_nouns(original_text)
-  #print ("keywords unsummarized: ",keywords)
   keyword_processor = KeywordProcessor()
+
   for keyword in keywords:
     keyword_processor.add_keyword(keyword)
 
   keywords_found = keyword_processor.extract_keywords(summarized_text)
   keywords_found = list(set(keywords_found))
-  #print ("keywords_found in summarized: ",keywords_found)
 
   important_keywords = []
+
   for keyword in keywords:
     if keyword in keywords_found:
-      important_keywords.append(keyword)
+      important_keywords.append(keyword.capitalize())
 
   return important_keywords
 
