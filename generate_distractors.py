@@ -1,15 +1,7 @@
 import numpy as np
-from sense2vec import Sense2Vec
-from sentence_transformers import SentenceTransformer
 from similarity.normalized_levenshtein import NormalizedLevenshtein
-from collections import OrderedDict
 from sklearn.metrics.pairwise import cosine_similarity
-
-
-s2v = Sense2Vec().from_disk('s2v_old')
-
-# paraphrase-distilroberta-base-v1
-sentence_transformer_model = SentenceTransformer('msmarco-distilbert-base-v3')
+import models
 
 normalized_levenshtein = NormalizedLevenshtein()
 
@@ -33,10 +25,10 @@ def get_highest_similarity_score(wordlist, wrd):
     return max(score)
 
 
-def sense2vec_get_words(word, s2v, topn, question):
+def sense2vec_get_words(word, s2v, topn, sentence):
     output = []
     try:
-        sense = s2v.get_best_sense(word,
+        sense = models.s2v.get_best_sense(word,
                                    senses=["NOUN", "PERSON", "PRODUCT", "LOC", "ORG", "EVENT", "NORP", "WORK OF ART",
                                            "FAC", "GPE", "NUM", "FACILITY"])
         most_similar = s2v.most_similar(sense, n=topn)
@@ -46,7 +38,7 @@ def sense2vec_get_words(word, s2v, topn, question):
 
     threshold = 0.6
     final = [word]
-    checklist = question.split()
+    checklist = sentence.split()
 
     for x in output:
         if get_highest_similarity_score(final, x) < threshold and x not in final and x not in checklist:
@@ -81,7 +73,7 @@ def mmr(doc_embedding, word_embeddings, words, top_n, lambda_param):
     return [words[idx] for idx in keywords_idx]
 
 
-def get_distractors (word, origsentence, sense2vecmodel, sentencemodel, top_n, lambdaval):
+def get_distractors(word, origsentence, sense2vecmodel, sentencemodel, top_n, lambdaval):
   distractors = sense2vec_get_words(word, sense2vecmodel, top_n, origsentence)
 
   if len(distractors) == 0:

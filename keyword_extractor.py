@@ -4,7 +4,6 @@ import pke
 import traceback
 from flashtext import KeywordProcessor
 
-
 def get_nouns(text):
     out = []
     try:

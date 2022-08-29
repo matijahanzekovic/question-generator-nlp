@@ -3,17 +3,15 @@ from keyword_extractor import get_keywords
 from nltk.tokenize import sent_tokenize
 from question_generation import generate_question
 from generate_distractors import get_distractors
-from sense2vec import Sense2Vec
-from sentence_transformers import SentenceTransformer
 from pydantic import BaseModel
 from typing import List
 import random
+import models
 
 class QuestionGeneratorResponse(BaseModel):
     question: str = ""
     answer: str = ""
     distractors: List[str] = []
-
 
 def build_question_generator(key, value, distractors):
     question_generator = QuestionGeneratorResponse()
@@ -25,11 +23,6 @@ def build_question_generator(key, value, distractors):
     return question_generator
 
 def get_question_generator_response(original_text):
-    s2v = Sense2Vec().from_disk('s2v_old')
-    sentence_transformer_model = SentenceTransformer('msmarco-distilbert-base-v3')
-
-    # torch.cuda.empty_cache()
-
     i = 0
     final_summarized_text = ""
     partial_text = ""
@@ -53,22 +46,22 @@ def get_question_generator_response(original_text):
                 question_answer = generate_question(partial_summarized_text, keywords)
 
                 for key, value in question_answer.items():
-                    distractors = get_distractors(value, key, s2v, sentence_transformer_model, 40, 0.2)
+                    distractors = get_distractors(value, key, models.s2v, models.sentence_transformer_model, 40, 0.2)
 
                     if len(distractors) >= 3:
                         question_generator = build_question_generator(key, value, random.sample(distractors, 3))
                         question_generator_response.append(question_generator)
     else:
         final_summarized_text = summarize_text(original_text)
-        keywords = get_keywords(final_summarized_text, final_summarized_text)
+        keywords = get_keywords(original_text, final_summarized_text)
         final_keywords.append(keywords)
 
         question_answer = generate_question(final_summarized_text, keywords)
 
         for key, value in question_answer.items():
-            distractors = get_distractors(value, key, s2v, sentence_transformer_model, 40, 0.2)
+            distractors = get_distractors(value, key, models.s2v, models.sentence_transformer_model, 40, 0.2)
 
-            if len(distractors) >= 4:
+            if len(distractors) >= 3:
                 question_generator = build_question_generator(key, value, random.sample(distractors, 3))
                 question_generator_response.append(question_generator)
             

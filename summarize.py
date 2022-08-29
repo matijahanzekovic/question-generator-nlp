@@ -1,5 +1,5 @@
 import torch
-from transformers import T5ForConditionalGeneration,T5Tokenizer
+import models
 
 import nltk
 #nltk.download('punkt')
@@ -43,15 +43,13 @@ def summarizer(original_text, model, tokenizer, device):
 
 
 def summarize_text(original_text):
-    summary_model = T5ForConditionalGeneration.from_pretrained('t5-base')
-    summary_tokenizer = T5Tokenizer.from_pretrained('t5-base')
-
     #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = torch.device("cpu")
-    summary_model = summary_model.to(device)
 
-    torch.cuda.empty_cache()
+    summary_model = models.summary_model.to(device)
 
-    summarized_text = summarizer(original_text, summary_model, summary_tokenizer, device)
+    #torch.cuda.empty_cache()
+
+    summarized_text = summarizer(original_text, summary_model, models.summary_tokenizer, device)
 
     return summarized_text

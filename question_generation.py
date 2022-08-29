@@ -1,14 +1,13 @@
 import torch
-from transformers import T5ForConditionalGeneration, T5Tokenizer
+import models
 
 #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = torch.device("cpu")
-question_model = T5ForConditionalGeneration.from_pretrained('ramsrigouthamg/t5_squad_v1')
-question_tokenizer = T5Tokenizer.from_pretrained('ramsrigouthamg/t5_squad_v1')
-question_model = question_model.to(device)
+question_model = models.question_model.to(device)
+
+#torch.cuda.empty_cache()
 
 def get_question(context, answer, model, tokenizer):
-    torch.cuda.empty_cache()
     text = "context: {} answer: {}".format(context,answer)
     encoding = tokenizer.encode_plus(text, max_length=384, pad_to_max_length=False, truncation=True, return_tensors="pt").to(device)
     input_ids, attention_mask = encoding["input_ids"], encoding["attention_mask"]
@@ -32,7 +31,7 @@ def generate_question(summarized_text, keywords):
     question_answer = {}
 
     for answer in keywords:
-        question = get_question(summarized_text, answer, question_model, question_tokenizer)
+        question = get_question(summarized_text, answer, question_model, models.question_tokenizer)
         question_answer[question] = answer
 
     return question_answer
